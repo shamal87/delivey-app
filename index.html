@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLASH10 — Everything you need, delivered in 10 minutes</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        flash: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS / Animations & Responsive Enhancements */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .pulse-glow { animation: pulseGlow 2s infinite; }
+        /* Hide scrollbar for clean horizontal category scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased flex flex-col min-h-full pb-20 md:pb-0">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- HEADER / NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                <!-- Logo & Delivery time -->
+                <div class="flex items-center gap-6">
+                    <a href="#home" onclick="switchView('home')" class="flex items-center gap-2 group">
+                        <div class="w-10 h-10 rounded-xl bg-flash-600 flex items-center justify-center text-white font-black text-xl shadow-md group-hover:scale-105 transition">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-extrabold tracking-tight text-gray-900">FLASH<span class="text-flash-600">10</span></span>
+                            <span class="hidden sm:block text-[10px] font-semibold tracking-wider text-flash-700 uppercase bg-flash-50 px-1.5 py-0.5 rounded">10-Min Delivery</span>
+                        </div>
+                    </a>
+
+                    <!-- Location Selector -->
+                    <div class="hidden lg:flex items-center gap-2 bg-gray-50 hover:bg-gray-100 transition px-3 py-1.5 rounded-xl cursor-pointer border border-gray-200" onclick="openLocationModal()">
+                        <i class="fa-solid fa-location-dot text-flash-600"></i>
+                        <div class="text-xs">
+                            <p class="font-bold text-gray-800 flex items-center gap-1">Delivery in 10 mins <span class="w-2 h-2 rounded-full bg-flash-500 animate-pulse"></span></p>
+                            <p id="current-location-label" class="text-gray-500 truncate max-w-[180px]">MG Road, Block A, City Center</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs ml-1"></i>
+                    </div>
+                </div>
+
+                <!-- Search Bar (Desktop) -->
+                <div class="flex-1 max-w-xl hidden md:block">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" id="desktop-search-input" oninput="handleSearch(this.value)" placeholder="Search for groceries, snacks, drinks, milk..." class="w-full pl-10 pr-4 py-2 bg-gray-100 hover:bg-gray-150 focus:bg-white border border-transparent focus:border-flash-500 rounded-xl text-sm focus:outline-none transition shadow-inner">
+                        <button onclick="clearSearch()" id="clear-search-btn" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Actions: Account, Orders, Cart -->
+                <div class="flex items-center gap-3">
+                    <button onclick="openLocationModal()" class="lg:hidden p-2 text-gray-700 hover:text-flash-600 rounded-xl bg-gray-100">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </button>
+
+                    <button onclick="switchView('orders')" class="hidden sm:flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-flash-600 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <span>Orders</span>
+                    </button>
+
+                    <div id="auth-nav-container">
+                        <!-- Dynamically populated by JS based on login state -->
+                    </div>
+
+                    <button onclick="switchView('cart')" class="relative flex items-center gap-2 bg-flash-600 hover:bg-flash-700 text-white px-4 py-2 rounded-xl font-semibold shadow-md hover:shadow-lg transition">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="hidden sm:inline">Cart</span>
+                        <span id="cart-item-count" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold border-2 border-white shadow">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div class="pb-3 md:hidden">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" id="mobile-search-input" oninput="handleSearch(this.value)" placeholder="Search 40+ groceries, snacks, dairy..." class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-transparent focus:border-flash-500 rounded-xl text-sm focus:outline-none transition">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- VIEW 1: HOME PAGE -->
+        <div id="view-home" class="app-view space-y-8 animate-fade-in">
+            <!-- Hero Banner -->
+            <div class="relative bg-gradient-to-r from-flash-800 via-flash-700 to-emerald-600 rounded-3xl p-6 sm:p-10 text-white overflow-hidden shadow-xl">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+                    <i class="fa-solid fa-bolt text-[280px]"></i>
+                </div>
+                <div class="relative z-10 max-w-xl space-y-4">
+                    <span class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-flash-50">
+                        <i class="fa-solid fa-clock text-amber-300"></i> Lightning Fast Delivery
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">Your Daily Essentials. <br>In Just 10 Minutes.</h1>
+                    <p class="text-flash-50 text-sm sm:text-base leading-relaxed">Fresh vegetables, dairy, snacks, and household essentials delivered right to your doorstep instantly.</p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="switchView('products')" class="bg-white text-flash-800 hover:bg-flash-50 px-6 py-3 rounded-xl font-bold shadow-lg transition flex items-center gap-2">
+                            <span>Shop Now</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="openLocationModal()" class="bg-flash-900/40 hover:bg-flash-900/60 text-white border border-white/20 px-5 py-3 rounded-xl font-semibold transition">
+                            Check Location
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Section -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 tracking-tight">Explore Categories</h2>
+                    <button onclick="switchView('products')" class="text-sm font-semibold text-flash-600 hover:text-flash-700">View All →</button>
+                </div>
+                <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Special Offers Section -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-tags text-amber-500"></i> Super Saver Deals (Up to 30% OFF)
+                    </h2>
+                </div>
+                <div id="special-offers-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+
+            <!-- Featured / Bestseller Products Section -->
+            <section class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-500"></i> Bestselling Groceries
+                    </h2>
+                    <button onclick="switchView('products')" class="text-sm font-semibold text-flash-600 hover:text-flash-700">See Catalog →</button>
+                </div>
+                <div id="featured-products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW 2: PRODUCTS CATALOG PAGE -->
+        <div id="view-products" class="app-view hidden space-y-6 animate-fade-in">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <div>
+                    <h1 id="catalog-title" class="text-2xl font-extrabold text-gray-900">All Products</h1>
+                    <p class="text-xs text-gray-500">Browse 40+ fresh items delivered in 10 minutes</p>
+                </div>
+                <!-- Filters & Sorting -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                        <span class="font-semibold text-gray-600">Category:</span>
+                        <select id="category-filter" onchange="filterCatalog()" class="bg-transparent font-medium text-gray-800 focus:outline-none cursor-pointer">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                        <span class="font-semibold text-gray-600">Sort By:</span>
+                        <select id="sort-filter" onchange="filterCatalog()" class="bg-transparent font-medium text-gray-800 focus:outline-none cursor-pointer">
+                            <option value="popular">Popularity / Bestseller</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="discount">Biggest Discount</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Search indicator if any -->
+            <div id="catalog-search-indicator" class="hidden items-center justify-between bg-flash-50 border border-flash-200 px-4 py-2.5 rounded-xl text-sm text-flash-800">
+                <span id="search-results-text">Showing search results...</span>
+                <button onclick="clearSearch()" class="font-bold underline text-xs">Clear Search</button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="full-catalog-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Empty Search State -->
+            <div id="empty-catalog-state" class="hidden text-center py-16 space-y-4">
+                <div class="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">No products found</h3>
+                <p class="text-sm text-gray-500 max-w-sm mx-auto">Try checking your spelling or searching for a different item like milk, apples, chips, or bread.</p>
+                <button onclick="clearSearch()" class="bg-flash-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-flash-700 transition">View All Products</button>
+            </div>
+        </div>
+
+        <!-- VIEW 3: CART PAGE -->
+        <div id="view-cart" class="app-view hidden space-y-6 animate-fade-in">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-extrabold text-gray-900">Your Shopping Cart</h1>
+                <button onclick="clearCart()" class="text-xs font-semibold text-red-500 hover:text-red-700 flex items-center gap-1">
+                    <i class="fa-solid fa-trash-can"></i> Clear Cart
+                </button>
+            </div>
+
+            <div id="cart-content-wrapper" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Cart Items List -->
+                <div class="lg:col-span-2 space-y-3" id="cart-items-container">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Cart Bill Details Summary -->
+                <div class="space-y-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                        <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3">Bill Details</h3>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <div class="flex justify-between">
+                                <span>Items Total</span>
+                                <span id="cart-subtotal" class="font-semibold text-gray-800">₹0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="flex items-center gap-1">Delivery Charge <i class="fa-solid fa-circle-info text-gray-400 text-xs" title="Standard 10-min delivery fee"></i></span>
+                                <span id="cart-delivery-fee" class="font-semibold text-gray-800">₹25</span>
+                            </div>
+                            <div class="flex justify-between text-flash-600">
+                                <span>Discount</span>
+                                <span id="cart-discount" class="font-semibold">-₹0</span>
+                            </div>
+                            <div class="border-t border-gray-100 pt-3 flex justify-between text-base font-extrabold text-gray-900">
+                                <span>To Pay</span>
+                                <span id="cart-total">₹0</span>
+                            </div>
+                        </div>
+                        <button onclick="proceedToCheckout()" class="w-full bg-flash-600 hover:bg-flash-700 text-white font-bold py-3.5 rounded-xl shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+                            <span>Proceed to Checkout</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Delivery Guarantee Banner -->
+                    <div class="bg-flash-50 border border-flash-200 p-4 rounded-2xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-flash-600 text-white flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div class="text-xs text-flash-900">
+                            <p class="font-bold">10-Minute Delivery Guarantee</p>
+                            <p class="text-flash-700 mt-0.5">Orders are dispatched instantly from our dark store near you.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty Cart State -->
+            <div id="empty-cart-state" class="hidden text-center py-20 space-y-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <div class="w-20 h-20 bg-flash-50 text-flash-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Your cart is empty</h3>
+                <p class="text-sm text-gray-500 max-w-sm mx-auto">Explore our fresh catalog and add groceries, snacks, or drinks to get started.</p>
+                <button onclick="switchView('products')" class="bg-flash-600 text-white px-6 py-3 rounded-xl font-semibold shadow hover:bg-flash-700 transition">Start Shopping</button>
+            </div>
+        </div>
+
+        <!-- VIEW 4: CHECKOUT PAGE -->
+        <div id="view-checkout" class="app-view hidden space-y-6 animate-fade-in max-w-4xl mx-auto">
+            <div class="flex items-center gap-3">
+                <button onclick="switchView('cart')" class="p-2 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-100">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <h1 class="text-2xl font-extrabold text-gray-900">Checkout & Payment</h1>
+            </div>
+
+            <form id="checkout-form" onsubmit="handlePlaceOrder(event)" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 space-y-6">
+                    <!-- Delivery Information -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-location-dot text-flash-600"></i> Delivery Information
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                                <input type="text" id="checkout-name" required placeholder="John Doe" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Mobile Number</label>
+                                <input type="tel" id="checkout-phone" required placeholder="9876543210" pattern="[0-9]{10}" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Delivery Address</label>
+                                <textarea id="checkout-address" required rows="2" placeholder="House/Flat No, Apartment/Building, Street Name" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Landmark (Optional)</label>
+                                <input type="text" id="checkout-landmark" placeholder="Near City Park" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Delivery Instructions</label>
+                                <input type="text" id="checkout-instructions" placeholder="Ring doorbell, leave at door" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <i class="fa-solid fa-wallet text-flash-600"></i> Payment Options
+                        </h2>
+                        <div class="space-y-3">
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 cursor-pointer transition bg-gray-50">
+                                <input type="radio" name="payment-method" value="COD" checked class="text-flash-600 focus:ring-flash-500">
+                                <i class="fa-solid fa-money-bill-wave text-flash-600 text-lg"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">Cash on Delivery (COD)</p>
+                                    <p class="text-xs text-gray-500">Pay when your 10-minute order arrives.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 cursor-pointer transition bg-gray-50">
+                                <input type="radio" name="payment-method" value="UPI" class="text-flash-600 focus:ring-flash-500">
+                                <i class="fa-solid fa-mobile-screen-button text-flash-600 text-lg"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">UPI Demo (GPay / PhonePe / Paytm)</p>
+                                    <p class="text-xs text-gray-500">Instant simulated secure UPI transaction.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 cursor-pointer transition bg-gray-50">
+                                <input type="radio" name="payment-method" value="Card" class="text-flash-600 focus:ring-flash-500">
+                                <i class="fa-solid fa-credit-card text-flash-600 text-lg"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">Credit / Debit Card (Demo)</p>
+                                    <p class="text-xs text-gray-500">Simulated card payment. No real credentials stored.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <div class="space-y-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                        <h3 class="font-bold text-gray-800 text-base border-b border-gray-100 pb-3">Order Summary</h3>
+                        <div id="checkout-items-summary" class="space-y-2 max-h-48 overflow-y-auto text-xs text-gray-600">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="border-t border-gray-100 pt-3 space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Subtotal</span>
+                                <span id="checkout-subtotal" class="font-semibold">₹0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Delivery Fee</span>
+                                <span id="checkout-delivery" class="font-semibold">₹25</span>
+                            </div>
+                            <div class="flex justify-between text-flash-600">
+                                <span>Discount</span>
+                                <span id="checkout-discount" class="font-semibold">-₹0</span>
+                            </div>
+                            <div class="border-t border-gray-100 pt-3 flex justify-between text-base font-extrabold text-gray-900">
+                                <span>Total Amount</span>
+                                <span id="checkout-total">₹0</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-flash-600 hover:bg-flash-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                            <span>Place 10-Min Order</span>
+                            <i class="fa-solid fa-bolt"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- VIEW 5: ORDERS & LIVE TRACKING PAGE -->
+        <div id="view-orders" class="app-view hidden space-y-6 animate-fade-in max-w-4xl mx-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-900">Your Orders & Live Tracking</h1>
+                    <p class="text-xs text-gray-500">Track your active 10-minute delivery or review past orders</p>
+                </div>
+                <button onclick="switchView('home')" class="text-sm font-semibold text-flash-600 hover:text-flash-700">← Back to Home</button>
+            </div>
+
+            <!-- Active Order Tracking Card (If any active order) -->
+            <div id="active-tracking-section" class="hidden space-y-4">
+                <div class="bg-gradient-to-br from-flash-900 to-flash-800 text-white p-6 rounded-3xl shadow-xl space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                            <span class="bg-flash-600 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Live Tracking</span>
+                            <h3 class="text-xl font-black mt-2">Order #<span id="track-order-id">FLASH10-1234</span></h3>
+                            <p class="text-xs text-flash-100 mt-0.5">Estimated delivery in approx. <span id="countdown-timer" class="font-bold text-amber-300">10:00</span> mins</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-300">Total Amount</p>
+                            <p id="track-order-total" class="text-lg font-bold">₹0</p>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Progress -->
+                    <div class="space-y-4">
+                        <div class="relative flex justify-between max-w-xl mx-auto">
+                            <!-- Progress Line Background -->
+                            <div class="absolute top-1/2 left-0 right-0 h-1 bg-white/20 -translate-y-1/2 z-0"></div>
+                            <div id="timeline-progress-bar" class="absolute top-1/2 left-0 h-1 bg-flash-500 -translate-y-1/2 z-0 transition-all duration-500" style="width: 0%;"></div>
+
+                            <!-- Steps -->
+                            <div class="relative z-10 flex flex-col items-center step-item" data-step="1">
+                                <div class="w-8 h-8 rounded-full bg-white text-flash-900 font-bold flex items-center justify-center text-xs shadow step-circle">1</div>
+                                <span class="text-[11px] font-semibold mt-2 text-center text-flash-100">Placed</span>
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center step-item" data-step="2">
+                                <div class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center text-xs shadow step-circle">2</div>
+                                <span class="text-[11px] font-semibold mt-2 text-center text-flash-100">Confirmed</span>
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center step-item" data-step="3">
+                                <div class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center text-xs shadow step-circle">3</div>
+                                <span class="text-[11px] font-semibold mt-2 text-center text-flash-100">Preparing</span>
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center step-item" data-step="4">
+                                <div class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center text-xs shadow step-circle">4</div>
+                                <span class="text-[11px] font-semibold mt-2 text-center text-flash-100">Out for Delivery</span>
+                            </div>
+                            <div class="relative z-10 flex flex-col items-center step-item" data-step="5">
+                                <div class="w-8 h-8 rounded-full bg-white/30 text-white font-bold flex items-center justify-center text-xs shadow step-circle">5</div>
+                                <span class="text-[11px] font-semibold mt-2 text-center text-flash-100">Delivered</span>
+                            </div>
+                        </div>
+                        <p id="tracking-status-desc" class="text-center text-xs text-amber-300 font-semibold pt-2">Order received and sent to nearest dark store.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Past Orders List -->
+            <div class="space-y-4">
+                <h2 class="text-lg font-bold text-gray-800">Order History</h2>
+                <div id="orders-list-container" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Empty Orders State -->
+            <div id="empty-orders-state" class="hidden text-center py-16 space-y-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <div class="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-box-archive"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">No past orders found</h3>
+                <p class="text-sm text-gray-500 max-w-sm mx-auto">Your completed 10-minute orders will appear here once placed.</p>
+                <button onclick="switchView('products')" class="bg-flash-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-flash-700 transition">Shop Now</button>
+            </div>
+        </div>
+
+        <!-- VIEW 6: LOGIN / AUTH PAGE -->
+        <div id="view-login" class="app-view hidden space-y-6 animate-fade-in max-w-md mx-auto py-8">
+            <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="w-12 h-12 bg-flash-600 text-white rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-md">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h1 class="text-2xl font-black text-gray-900">Welcome to FLASH10</h1>
+                    <p class="text-xs text-gray-500">Sign in or create a demo account for quick checkout</p>
+                </div>
+
+                <!-- Tabs: Login vs Register -->
+                <div class="flex rounded-xl bg-gray-100 p-1 text-sm font-semibold">
+                    <button onclick="switchAuthTab('login')" id="tab-login-btn" class="flex-1 py-2 rounded-lg bg-white text-gray-900 shadow-sm transition">Sign In</button>
+                    <button onclick="switchAuthTab('register')" id="tab-register-btn" class="flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-900 transition">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Email or Mobile</label>
+                        <input type="text" id="login-email" required placeholder="demo@flash10.com or 9876543210" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-flash-600 hover:bg-flash-700 text-white font-bold py-3 rounded-xl shadow transition">Sign In</button>
+                    <div class="pt-2 text-center">
+                        <button type="button" onclick="fillDemoUser()" class="text-xs font-semibold text-flash-600 hover:underline">⚡ Quick Fill Demo Account</button>
+                    </div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                        <input type="text" id="reg-name" required placeholder="Jane Doe" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Email Address</label>
+                        <input type="email" id="reg-email" required placeholder="jane@example.com" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Mobile Number</label>
+                        <input type="tel" id="reg-phone" required placeholder="9876543210" pattern="[0-9]{10}" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                        <input type="password" id="reg-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-flash-500 focus:outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-flash-600 hover:bg-flash-700 text-white font-bold py-3 rounded-xl shadow transition">Create Demo Account</button>
+                </form>
+
+                <p class="text-[11px] text-gray-400 text-center">Note: Frontend demo authentication stored in LocalStorage for prototype testing.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 mt-16 pt-12 pb-24 md:pb-12 text-sm text-gray-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+            <div class="space-y-3 lg:col-span-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-flash-600 flex items-center justify-center text-white font-black text-sm">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <span class="text-xl font-extrabold text-gray-900">FLASH<span class="text-flash-600">10</span></span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed max-w-sm">Everything you need, delivered in 10 minutes. Fresh groceries, fruits, vegetables, snacks, and household essentials at your fingertips.</p>
+                <div class="flex gap-3 pt-2 text-gray-400">
+                    <a href="#" class="hover:text-flash-600"><i class="fa-brands fa-facebook-f text-base"></i></a>
+                    <a href="#" class="hover:text-flash-600"><i class="fa-brands fa-twitter text-base"></i></a>
+                    <a href="#" class="hover:text-flash-600"><i class="fa-brands fa-instagram text-base"></i></a>
+                    <a href="#" class="hover:text-flash-600"><i class="fa-brands fa-linkedin-in text-base"></i></a>
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 mb-3">Useful Links</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" onclick="switchView('home')" class="hover:text-flash-600">Home</a></li>
+                    <li><a href="#" onclick="switchView('products')" class="hover:text-flash-600">All Products</a></li>
+                    <li><a href="#" onclick="switchView('cart')" class="hover:text-flash-600">Shopping Cart</a></li>
+                    <li><a href="#" onclick="switchView('orders')" class="hover:text-flash-600">Order Tracking</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 mb-3">Categories</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" onclick="filterByCategory('Fruits & Vegetables')" class="hover:text-flash-600">Fruits & Vegetables</a></li>
+                    <li><a href="#" onclick="filterByCategory('Dairy & Eggs')" class="hover:text-flash-600">Dairy & Eggs</a></li>
+                    <li><a href="#" onclick="filterByCategory('Snacks & Munchies')" class="hover:text-flash-600">Snacks & Munchies</a></li>
+                    <li><a href="#" onclick="filterByCategory('Cold Drinks')" class="hover:text-flash-600">Cold Drinks</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 mb-3">Help & Policy</h4>
+                <ul class="space-y-2 text-xs">
+                    <li><a href="#" class="hover:text-flash-600">About Us</a></li>
+                    <li><a href="#" class="hover:text-flash-600">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-flash-600">Terms & Conditions</a></li>
+                    <li><a href="#" class="hover:text-flash-600">Support & FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-400">
+            <p>© 2026 FLASH10 Technologies Inc. All rights reserved. Demo Quick-Commerce Web App.</p>
+            <p class="mt-2 sm:mt-0">Designed for lightning-fast 10-minute delivery.</p>
+        </div>
+    </footer>
+
+    <!-- MOBILE FIXED BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 px-6 py-2 flex justify-between items-center shadow-lg">
+        <button onclick="switchView('home')" class="flex flex-col items-center text-gray-600 hover:text-flash-600 transition" id="mob-nav-home">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Home</span>
+        </button>
+        <button onclick="switchView('products')" class="flex flex-col items-center text-gray-600 hover:text-flash-600 transition" id="mob-nav-products">
+            <i class="fa-solid fa-grid-2 text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Catalog</span>
+        </button>
+        <button onclick="switchView('cart')" class="flex flex-col items-center text-gray-600 hover:text-flash-600 transition relative" id="mob-nav-cart">
+            <i class="fa-solid fa-cart-shopping text-lg"></i>
+            <span id="mob-cart-badge" class="absolute -top-1 right-2 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+            <span class="text-[10px] font-semibold mt-0.5">Cart</span>
+        </button>
+        <button onclick="switchView('orders')" class="flex flex-col items-center text-gray-600 hover:text-flash-600 transition" id="mob-nav-orders">
+            <i class="fa-solid fa-box-archive text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Orders</span>
+        </button>
+        <button onclick="checkAuthAndNavigate()" class="flex flex-col items-center text-gray-600 hover:text-flash-600 transition" id="mob-nav-account">
+            <i class="fa-solid fa-user text-lg"></i>
+            <span class="text-[10px] font-semibold mt-0.5">Account</span>
+        </button>
+    </nav>
+
+    <!-- PRODUCT DETAILS MODAL -->
+    <div id="product-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-fade-in relative">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center z-10 transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div id="modal-product-content" class="p-6 space-y-4">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LOCATION MODAL -->
+    <div id="location-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl animate-fade-in">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot text-flash-600"></i> Select Delivery Location
+                </h3>
+                <button onclick="closeLocationModal()" class="w-8 h-8 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500">Choose a demo delivery address or enter your custom location for lightning-fast 10-minute dispatch.</p>
+            <div class="space-y-3">
+                <div onclick="selectLocationPreset('MG Road, Block A, City Center')" class="p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 hover:bg-flash-50 cursor-pointer transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-800">MG Road, Block A, City Center</p>
+                        <p class="text-[11px] text-gray-500">⚡ Dark Store #04 (1.2 km away)</p>
+                    </div>
+                    <i class="fa-solid fa-check text-flash-600"></i>
+                </div>
+                <div onclick="selectLocationPreset('Green Park, Sector 4, Westside')" class="p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 hover:bg-flash-50 cursor-pointer transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-800">Green Park, Sector 4, Westside</p>
+                        <p class="text-[11px] text-gray-500">⚡ Dark Store #09 (0.8 km away)</p>
+                    </div>
+                    <i class="fa-solid fa-check text-flash-600 opacity-0"></i>
+                </div>
+                <div onclick="selectLocationPreset('Sunshine Apartments, Beach Road')" class="p-3.5 rounded-xl border border-gray-200 hover:border-flash-500 hover:bg-flash-50 cursor-pointer transition flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-800">Sunshine Apartments, Beach Road</p>
+                        <p class="text-[11px] text-gray-500">⚡ Dark Store #02 (2.1 km away)</p>
+                    </div>
+                    <i class="fa-solid fa-check text-flash-600 opacity-0"></i>
+                </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-gray-100">
+                <label class="block text-xs font-semibold text-gray-700">Or enter custom address:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="custom-location-input" placeholder="Enter locality or building..." class="flex-1 px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-flash-500 focus:outline-none">
+                    <button onclick="saveCustomLocation()" class="bg-flash-600 hover:bg-flash-700 text-white px-4 py-2 text-xs font-bold rounded-xl transition">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION CODE -->
+    <script>
+        /* ==========================================
+           1. PRODUCT CATALOG DATA (40+ Sample Products)
+           ========================================== */
+        const PRODUCTS_DATA = [
+            // Fruits & Vegetables (4)
+            { id: "p1", name: "Fresh Bananas (6 pcs)", category: "Fruits & Vegetables", price: 45, originalPrice: 60, discount: 25, unit: "6 pieces", image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.8, bestseller: true, description: "Naturally ripened, farm-fresh bananas rich in potassium and vitamins." },
+            { id: "p2", name: "Shimla Apples", category: "Fruits & Vegetables", price: 90, originalPrice: 120, discount: 25, unit: "500 g", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&auto=format&fit=crop&q=80", stock: 18, rating: 4.9, bestseller: true, description: "Crisp, juicy, and sweet apples handpicked from premium orchards." },
+            { id: "p3", name: "Fresh Potatoes", category: "Fruits & Vegetables", price: 30, originalPrice: 40, discount: 25, unit: "1 kg", image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&auto=format&fit=crop&q=80", stock: 40, rating: 4.6, bestseller: false, description: "Farm fresh, unpolished starchy potatoes ideal for everyday cooking." },
+            { id: "p4", name: "Fresh Red Tomatoes", category: "Fruits & Vegetables", price: 35, originalPrice: 45, discount: 22, unit: "500 g", image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&auto=format&fit=crop&q=80", stock: 30, rating: 4.7, bestseller: false, description: "Juicy, farm-ripe tomatoes perfect for salads, curries, and soups." },
+
+            // Dairy & Eggs (4)
+            { id: "p5", name: "Amul Fresh Milk", category: "Dairy & Eggs", price: 30, originalPrice: 32, discount: 6, unit: "500 ml", image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&auto=format&fit=crop&q=80", stock: 50, rating: 5.0, bestseller: true, description: "Pure, pasteurized cow milk rich in calcium and essential nutrients." },
+            { id: "p6", name: "Farm Fresh Brown Eggs", category: "Dairy & Eggs", price: 48, originalPrice: 60, discount: 20, unit: "6 pieces", image: "https://images.unsplash.com/photo-1516448881985-7833a69a7c64?w=400&auto=format&fit=crop&q=80", stock: 15, rating: 4.8, bestseller: true, description: "High-protein organic brown eggs sourced directly from free-range hens." },
+            { id: "p7", name: "Amul Butter", category: "Dairy & Eggs", price: 58, originalPrice: 62, discount: 6, unit: "100 g", image: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&auto=format&fit=crop&q=80", stock: 22, rating: 4.9, bestseller: false, description: "Creamy, delicious salted butter made from pure milk fat." },
+            { id: "p8", name: "Plain Curd (Dahi)", category: "Dairy & Eggs", price: 35, originalPrice: 40, discount: 12, unit: "400 g", image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.7, bestseller: false, description: "Thick and smooth set curd packed with probiotics for good digestion." },
+
+            // Snacks & Munchies (4)
+            { id: "p9", name: "Classic Crispy Potato Chips", category: "Snacks & Munchies", price: 20, originalPrice: 25, discount: 20, unit: "50 g", image: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400&auto=format&fit=crop&q=80", stock: 60, rating: 4.7, bestseller: true, description: "Thinly sliced, perfectly salted golden potato crisps." },
+            { id: "p10", name: "Roasted Almond Chocolate", category: "Snacks & Munchies", price: 40, originalPrice: 50, discount: 20, unit: "40 g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&auto=format&fit=crop&q=80", stock: 35, rating: 4.9, bestseller: true, description: "Rich milk chocolate infused with crunchy roasted almonds." },
+            { id: "p11", name: "Spicy Bhujia Namkeen", category: "Snacks & Munchies", price: 35, originalPrice: 45, discount: 22, unit: "200 g", image: "https://images.unsplash.com/photo-1599488615731-7e5c2823ff26?w=400&auto=format&fit=crop&q=80", stock: 40, rating: 4.5, bestseller: false, description: "Traditional crunchy and spicy tea-time snack." },
+            { id: "p12", name: "Butter Cookies", category: "Snacks & Munchies", price: 50, originalPrice: 70, discount: 28, unit: "150 g", image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&auto=format&fit=crop&q=80", stock: 28, rating: 4.8, bestseller: false, description: "Delightfully melt-in-the-mouth buttery cookies." },
+
+            // Cold Drinks (4)
+            { id: "p13", name: "Real Orange Fruit Juice", category: "Cold Drinks", price: 60, originalPrice: 75, discount: 20, unit: "1 Litre", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=400&auto=format&fit=crop&q=80", stock: 20, rating: 4.8, bestseller: true, description: "Refreshing 100% orange juice with natural Vitamin C." },
+            { id: "p14", name: "Kinley Bottled Mineral Water", category: "Cold Drinks", price: 20, originalPrice: 20, discount: 0, unit: "1 Litre", image: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=400&auto=format&fit=crop&q=80", stock: 100, rating: 4.9, bestseller: true, description: "Pure, crisp, and safe drinking mineral water." },
+            { id: "p15", name: "Sparkling Lemon Soda", category: "Cold Drinks", price: 40, originalPrice: 50, discount: 20, unit: "750 ml", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400&auto=format&fit=crop&q=80", stock: 30, rating: 4.6, bestseller: false, description: "Fizzy and refreshing citrus carbonated beverage." },
+            { id: "p16", name: "Cold Coffee Shake", category: "Cold Drinks", price: 45, originalPrice: 55, discount: 18, unit: "200 ml", image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.7, bestseller: false, description: "Rich and creamy iced coffee energy drink." },
+
+            // Bakery (4)
+            { id: "p17", name: "Brown Bread", category: "Bakery", price: 40, originalPrice: 48, discount: 16, unit: "400 g", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&auto=format&fit=crop&q=80", stock: 20, rating: 4.7, bestseller: true, description: "Whole wheat wholesome brown bread baked to perfection." },
+            { id: "p18", name: "Fresh Burger Buns", category: "Bakery", price: 35, originalPrice: 45, discount: 22, unit: "4 pieces", image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=400&auto=format&fit=crop&q=80", stock: 18, rating: 4.5, bestseller: false, description: "Soft, fluffy sesame topped burger buns." },
+            { id: "p19", name: "Choco Chip Muffins", category: "Bakery", price: 60, originalPrice: 75, discount: 20, unit: "2 pieces", image: "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=400&auto=format&fit=crop&q=80", stock: 15, rating: 4.8, bestseller: false, description: "Spongy vanilla muffins loaded with rich chocolate chips." },
+            { id: "p20", name: "Garlic Toast Slices", category: "Bakery", price: 45, originalPrice: 55, discount: 18, unit: "200 g", image: "https://images.unsplash.com/photo-1619533355290-d9d216f95029?w=400&auto=format&fit=crop&q=80", stock: 22, rating: 4.6, bestseller: false, description: "Crispy herb and garlic seasoned baked toast." },
+
+            // Instant Food (4)
+            { id: "p21", name: "Instant Noodles (Masala)", category: "Instant Food", price: 25, originalPrice: 28, discount: 10, unit: "70 g", image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=400&auto=format&fit=crop&q=80", stock: 80, rating: 4.9, bestseller: true, description: "Favorite 2-minute tastemaker spiced noodle snack." },
+            { id: "p22", name: "Instant Oats Porridge", category: "Instant Food", price: 55, originalPrice: 70, discount: 21, unit: "400 g", image: "https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.7, bestseller: false, description: "Healthy whole grain rolled oats for a quick breakfast." },
+            { id: "p23", name: "Ready-to-Eat Dal Makhani", category: "Instant Food", price: 95, originalPrice: 130, discount: 26, unit: "300 g", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=80", stock: 15, rating: 4.8, bestseller: false, description: "Authentic buttery slow-cooked black lentils ready in 2 minutes." },
+            { id: "p24", name: "Tomato Soup Cup", category: "Instant Food", price: 30, originalPrice: 40, discount: 25, unit: "50 g", image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=400&auto=format&fit=crop&q=80", stock: 35, rating: 4.5, bestseller: false, description: "Warm and comforting instant creamy tomato soup." },
+
+            // Personal Care (4)
+            { id: "p25", name: "Herbal Neem Face Wash", category: "Personal Care", price: 110, originalPrice: 150, discount: 26, unit: "100 ml", image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=80", stock: 20, rating: 4.8, bestseller: true, description: "Purifying face wash for clear and pimple-free skin." },
+            { id: "p26", name: "Aloe Vera Soft Moisturizer", category: "Personal Care", price: 130, originalPrice: 175, discount: 25, unit: "150 ml", image: "https://images.unsplash.com/photo-1608248597359-994bb0c49028?w=400&auto=format&fit=crop&q=80", stock: 18, rating: 4.9, bestseller: false, description: "Deeply hydrating gel lotion with natural aloe extract." },
+            { id: "p27", name: "Ayurvedic Toothpaste", category: "Personal Care", price: 95, originalPrice: 115, discount: 17, unit: "200 g", image: "https://images.unsplash.com/photo-1559563458-527698bf5295?w=400&auto=format&fit=crop&q=80", stock: 30, rating: 4.7, bestseller: false, description: "Complete dental care toothpaste with herbal extracts." },
+            { id: "p28", name: "Soft Bath Soap (Pack of 3)", category: "Personal Care", price: 120, originalPrice: 150, discount: 20, unit: "3 x 100 g", image: "https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.8, bestseller: false, description: "Gentle cleansing bathing soap with floral fragrance." },
+
+            // Household Essentials (4)
+            { id: "p29", name: "Lemon Dishwash Liquid", category: "Household Essentials", price: 99, originalPrice: 130, discount: 23, unit: "500 ml", image: "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=400&auto=format&fit=crop&q=80", stock: 30, rating: 4.9, bestseller: true, description: "Powerful grease-cutting lemon dishwashing gel." },
+            { id: "p30", name: "Floor Disinfectant Cleaner", category: "Household Essentials", price: 180, originalPrice: 220, discount: 18, unit: "1 Litre", image: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=400&auto=format&fit=crop&q=80", stock: 15, rating: 4.8, bestseller: false, description: "Kills 99.9% germs and leaves a pleasant pine fragrance." },
+            { id: "p31", name: "Soft Facial Tissues", category: "Household Essentials", price: 65, originalPrice: 85, discount: 23, unit: "100 pulls", image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&auto=format&fit=crop&q=80", stock: 40, rating: 4.7, bestseller: false, description: "Ultra-soft 2-ply pure cellulose facial tissues." },
+            { id: "p32", name: "Mosquito Repellent Vaporizer", category: "Household Essentials", price: 85, originalPrice: 105, discount: 19, unit: "Refill + Machine", image: "https://images.unsplash.com/photo-1615397349754-cfa2066a298e?w=400&auto=format&fit=crop&q=80", stock: 20, rating: 4.6, bestseller: false, description: "Effective overnight protection against mosquitoes." },
+
+            // Meat & Seafood (4)
+            { id: "p33", name: "Fresh Chicken Breast (Boneless)", category: "Meat & Seafood", price: 190, originalPrice: 240, discount: 20, unit: "500 g", image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=400&auto=format&fit=crop&q=80", stock: 12, rating: 4.9, bestseller: true, description: "Tender, juicy, and antibiotic-free boneless chicken cuts." },
+            { id: "p34", name: "Fresh Mutton Curry Cut", category: "Meat & Seafood", price: 380, originalPrice: 450, discount: 15, unit: "500 g", image: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=400&auto=format&fit=crop&q=80", stock: 8, rating: 4.8, bestseller: false, description: "Succulent pieces of fresh tender goat meat." },
+            { id: "p35", name: "Fresh Sea Rohu Fish", category: "Meat & Seafood", price: 210, originalPrice: 260, discount: 19, unit: "500 g", image: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&auto=format&fit=crop&q=80", stock: 10, rating: 4.7, bestseller: false, description: "Cleaned and scaled fresh river fish rich in omega-3." },
+            { id: "p36", name: "Juicy Chicken Salami", category: "Meat & Seafood", price: 140, originalPrice: 175, discount: 20, unit: "250 g", image: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&auto=format&fit=crop&q=80", stock: 14, rating: 4.6, bestseller: false, description: "Pre-cooked sliced gourmet chicken salami." },
+
+            // Health & Wellness (4)
+            { id: "p37", name: "Immunity Booster Chyawanprash", category: "Health & Wellness", price: 275, originalPrice: 350, discount: 21, unit: "500 g", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&auto=format&fit=crop&q=80", stock: 18, rating: 4.9, bestseller: true, description: "Traditional Ayurvedic herbal formulation for strong immunity." },
+            { id: "p38", name: "Vitamin C Chewable Tablets", category: "Health & Wellness", price: 199, originalPrice: 250, discount: 20, unit: "60 tablets", image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&auto=format&fit=crop&q=80", stock: 22, rating: 4.8, bestseller: false, description: "Daily dietary supplement for radiant skin and vitality." },
+            { id: "p39", name: "Organic Honey", category: "Health & Wellness", price: 220, originalPrice: 290, discount: 24, unit: "500 g", image: "https://images.unsplash.com/photo-1587049352847-4a222e784d38?w=400&auto=format&fit=crop&q=80", stock: 25, rating: 4.9, bestseller: false, description: "Pure multi-floral raw honey with no added sugar." },
+            { id: "p40", name: "Digital Thermometer", category: "Health & Wellness", price: 150, originalPrice: 200, discount: 25, unit: "1 piece", image: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=400&auto=format&fit=crop&q=80", stock: 10, rating: 4.7, bestseller: false, description: "Fast and accurate digital fever thermometer." }
+        ];
+
+        /* ==========================================
+           2. APPLICATION STATE & LOCALSTORAGE
+           ========================================== */
+        let currentView = 'home';
+        let cart = JSON.parse(localStorage.getItem('flash10_cart')) || [];
+        let orders = JSON.parse(localStorage.getItem('flash10_orders')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('flash10_user')) || null;
+        let selectedLocation = localStorage.getItem('flash10_location') || "MG Road, Block A, City Center";
+        let searchQuery = "";
+        let activeCategoryFilter = "all";
+        let activeSortFilter = "popular";
+        let activeTrackingOrder = JSON.parse(localStorage.getItem('flash10_active_tracking')) || null;
+        let countdownTimerInterval = null;
+
+        // Initialize application on window load
+        window.onload = function() {
+            updateLocationLabel();
+            renderAuthNav();
+            renderCategories();
+            renderSpecialOffers();
+            renderFeaturedProducts();
+            renderCategoryDropdown();
+            renderFullCatalog();
+            updateCartCount();
+            renderCart();
+            renderOrders();
+            checkActiveTracking();
+        };
+
+        /* ==========================================
+           3. NAVIGATION & VIEW SWITCHING
+           ========================================== */
+        function switchView(viewName) {
+            currentView = viewName;
+            document.querySelectorAll('.app-view').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Update mobile bottom nav highlights
+            ['home', 'products', 'cart', 'orders'].forEach(v => {
+                const btn = document.getElementById(`mob-nav-${v}`);
+                if (btn) {
+                    if (v === viewName) {
+                        btn.classList.add('text-flash-600');
+                        btn.classList.remove('text-gray-600');
+                    } else {
+                        btn.classList.remove('text-flash-600');
+                        btn.classList.add('text-gray-600');
+                    }
+                }
+            });
+
+            if (viewName === 'cart') renderCart();
+            if (viewName === 'orders') renderOrders();
+            if (viewName === 'checkout') renderCheckoutSummary();
+        }
+
+        function checkAuthAndNavigate() {
+            if (currentUser) {
+                showToast(`Logged in as ${currentUser.name}`, 'success');
+                switchView('orders');
+            } else {
+                switchView('login');
+            }
+        }
+
+        /* ==========================================
+           4. TOAST NOTIFICATIONS
+           ========================================== */
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-gray-900 text-white' : 'bg-red-600 text-white';
+            const icon = type === 'success' ? 'fa-circle-check text-flash-500' : 'fa-circle-exclamation text-white';
+            
+            toast.className = `${bgClass} px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold animate-fade-in pointer-events-auto border border-white/10`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /* ==========================================
+           5. LOCATION MANAGEMENT
+           ========================================== */
+        function openLocationModal() {
+            document.getElementById('location-modal').classList.remove('hidden');
+            document.getElementById('location-modal').classList.add('flex');
+        }
+
+        function closeLocationModal() {
+            document.getElementById('location-modal').classList.add('hidden');
+            document.getElementById('location-modal').classList.remove('flex');
+        }
+
+        function selectLocationPreset(loc) {
+            selectedLocation = loc;
+            localStorage.setItem('flash10_location', loc);
+            updateLocationLabel();
+            closeLocationModal();
+            showToast(`Delivery location updated to ${loc}`);
+        }
+
+        function saveCustomLocation() {
+            const val = document.getElementById('custom-location-input').value.trim();
+            if (val) {
+                selectedLocation = val;
+                localStorage.setItem('flash10_location', val);
+                updateLocationLabel();
+                closeLocationModal();
+                showToast(`Delivery location set to ${val}`);
+            } else {
+                showToast('Please enter a valid location', 'error');
+            }
+        }
+
+        function updateLocationLabel() {
+            const lbl = document.getElementById('current-location-label');
+            if (lbl) lbl.innerText = selectedLocation;
+        }
+
+        /* ==========================================
+           6. RENDER HOMEPAGE SECTIONS
+           ========================================== */
+        const CATEGORIES_LIST = [
+            { name: "Fruits & Vegetables", icon: "fa-carrot", color: "bg-emerald-50 text-emerald-600" },
+            { name: "Dairy & Eggs", icon: "fa-cow", color: "bg-amber-50 text-amber-600" },
+            { name: "Snacks & Munchies", icon: "fa-cookie-bite", color: "bg-orange-50 text-orange-600" },
+            { name: "Cold Drinks", icon: "fa-glass-water", color: "bg-blue-50 text-blue-600" },
+            { name: "Bakery", icon: "fa-bread-slice", color: "bg-yellow-50 text-yellow-600" },
+            { name: "Instant Food", icon: "fa-bowl-food", color: "bg-red-50 text-red-600" },
+            { name: "Personal Care", icon: "fa-pump-soap", color: "bg-purple-50 text-purple-600" },
+            { name: "Household Essentials", icon: "fa-house-chimney", color: "bg-teal-50 text-teal-600" },
+            { name: "Meat & Seafood", icon: "fa-drumstick-bite", color: "bg-rose-50 text-rose-600" },
+            { name: "Health & Wellness", icon: "fa-pills", color: "bg-indigo-50 text-indigo-600" }
+        ];
+
+        function renderCategories() {
+            const container = document.getElementById('categories-grid');
+            if (!container) return;
+            container.innerHTML = CATEGORIES_LIST.map(cat => `
+                <div onclick="filterByCategory('${cat.name}')" class="bg-white p-4 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 flex flex-col items-center text-center cursor-pointer group transition">
+                    <div class="w-14 h-14 rounded-2xl ${cat.color} flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition shadow-inner">
+                        <i class="fa-solid ${cat.icon}"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-gray-800 group-hover:text-flash-600 transition line-clamp-1">${cat.name}</h3>
+                </div>
+            `).join('');
+        }
+
+        function filterByCategory(categoryName) {
+            activeCategoryFilter = categoryName;
+            const select = document.getElementById('category-filter');
+            if (select) select.value = categoryName;
+            switchView('products');
+            renderFullCatalog();
+        }
+
+        function renderSpecialOffers() {
+            const container = document.getElementById('special-offers-grid');
+            if (!container) return;
+            const offers = PRODUCTS_DATA.filter(p => p.discount >= 24).slice(0, 4);
+            container.innerHTML = offers.map(p => createProductCardHTML(p)).join('');
+        }
+
+        function renderFeaturedProducts() {
+            const container = document.getElementById('featured-products-grid');
+            if (!container) return;
+            const bests = PRODUCTS_DATA.filter(p => p.bestseller).slice(0, 8);
+            container.innerHTML = bests.map(p => createProductCardHTML(p)).join('');
+        }
+
+        function createProductCardHTML(p) {
+            const cartItem = cart.find(item => item.id === p.id);
+            const qty = cartItem ? cartItem.quantity : 0;
+            const isOutOfStock = p.stock <= 0;
+
+            return `
+                <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 hover:shadow-md transition flex flex-col justify-between relative group">
+                    ${p.discount > 0 ? `<span class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow">${p.discount}% OFF</span>` : ''}
+                    
+                    <div onclick="openProductModal('${p.id}')" class="cursor-pointer space-y-2">
+                        <div class="w-full h-36 bg-gray-50 rounded-xl overflow-hidden relative flex items-center justify-center p-2">
+                            <img src="${p.image}" alt="${p.name}" class="object-cover h-full w-full rounded-lg group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/300x300/f3f4f6/9ca3af?text=FLASH10'">
+                        </div>
+                        <div class="flex items-center gap-1 text-[10px] text-gray-400 font-semibold">
+                            <i class="fa-solid fa-clock text-flash-600"></i> 10 MINS
+                            <span>•</span>
+                            <span>${p.unit}</span>
+                        </div>
+                        <h3 class="text-xs font-bold text-gray-800 line-clamp-2 hover:text-flash-600">${p.name}</h3>
+                    </div>
+
+                    <div class="pt-3 border-t border-gray-50 flex items-center justify-between mt-2">
+                        <div>
+                            <div class="text-sm font-black text-gray-900">₹${p.price}</div>
+                            ${p.originalPrice > p.price ? `<div class="text-[10px] text-gray-400 line-through">₹${p.originalPrice}</div>` : ''}
+                        </div>
+                        
+                        <div>
+                            ${isOutOfStock ? 
+                                `<span class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg">Out of Stock</span>` :
+                                qty === 0 ? 
+                                    `<button onclick="addToCart('${p.id}')" class="bg-flash-50 hover:bg-flash-600 text-flash-700 hover:text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-flash-200 hover:border-flash-600 transition shadow-sm">ADD</button>` :
+                                    `<div class="flex items-center gap-1.5 bg-flash-600 text-white rounded-xl px-2 py-1 shadow-sm">
+                                        <button onclick="updateQuantity('${p.id}', -1)" class="w-5 h-5 flex items-center justify-center font-bold hover:bg-flash-700 rounded">-</button>
+                                        <span class="text-xs font-bold w-4 text-center">${qty}</span>
+                                        <button onclick="updateQuantity('${p.id}', 1)" class="w-5 h-5 flex items-center justify-center font-bold hover:bg-flash-700 rounded">+</button>
+                                    </div>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* ==========================================
+           7. SEARCH & CATALOG FILTERING
+           ========================================== */
+        function renderCategoryDropdown() {
+            const select = document.getElementById('category-filter');
+            if (!select) return;
+            select.innerHTML = `<option value="all">All Categories</option>` + 
+                CATEGORIES_LIST.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        }
+
+        function handleSearch(val) {
+            searchQuery = val.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) {
+                if (searchQuery.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+
+            if (currentView !== 'products') {
+                switchView('products');
+            }
+            renderFullCatalog();
+        }
+
+        function clearSearch() {
+            searchQuery = "";
+            const dInput = document.getElementById('desktop-search-input');
+            const mInput = document.getElementById('mobile-search-input');
+            if (dInput) dInput.value = "";
+            if (mInput) mInput.value = "";
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+            renderFullCatalog();
+        }
+
+        function filterCatalog() {
+            const catSelect = document.getElementById('category-filter');
+            const sortSelect = document.getElementById('sort-filter');
+            if (catSelect) activeCategoryFilter = catSelect.value;
+            if (sortSelect) activeSortFilter = sortSelect.value;
+            renderFullCatalog();
+        }
+
+        function renderFullCatalog() {
+            const container = document.getElementById('full-catalog-grid');
+            const emptyState = document.getElementById('empty-catalog-state');
+            const searchIndicator = document.getElementById('catalog-search-indicator');
+            const searchTxt = document.getElementById('search-results-text');
+            const catalogTitle = document.getElementById('catalog-title');
+            if (!container) return;
+
+            let filtered = PRODUCTS_DATA.filter(p => {
+                const matchCat = activeCategoryFilter === 'all' || p.category === activeCategoryFilter;
+                const matchSearch = searchQuery === '' || 
+                    p.name.toLowerCase().includes(searchQuery) || 
+                    p.category.toLowerCase().includes(searchQuery) ||
+                    p.description.toLowerCase().includes(searchQuery);
+                return matchCat && matchSearch;
+            });
+
+            // Sorting
+            if (activeSortFilter === 'popular') {
+                filtered.sort((a, b) => b.rating - a.rating);
+            } else if (activeSortFilter === 'price-low') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (activeSortFilter === 'price-high') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else if (activeSortFilter === 'discount') {
+                filtered.sort((a, b) => b.discount - a.discount);
+            }
+
+            if (catalogTitle) {
+                catalogTitle.innerText = activeCategoryFilter === 'all' ? 'All Products' : activeCategoryFilter;
+            }
+
+            if (searchIndicator && searchTxt) {
+                if (searchQuery !== '') {
+                    searchIndicator.classList.remove('hidden');
+                    searchIndicator.classList.add('flex');
+                    searchTxt.innerText = `Search results for "${searchQuery}" (${filtered.length} items found)`;
+                } else {
+                    searchIndicator.classList.add('hidden');
+                    searchIndicator.classList.remove('flex');
+                }
+            }
+
+            if (filtered.length === 0) {
+                container.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+            } else {
+                container.classList.remove('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
+                container.innerHTML = filtered.map(p => createProductCardHTML(p)).join('');
+            }
+        }
+
+        /* ==========================================
+           8. PRODUCT DETAILS MODAL
+           ========================================== */
+        function openProductModal(productId) {
+            const p = PRODUCTS_DATA.find(item => item.id === productId);
+            if (!p) return;
+            const modalContent = document.getElementById('modal-product-content');
+            const cartItem = cart.find(item => item.id === p.id);
+            const qty = cartItem ? cartItem.quantity : 0;
+
+            modalContent.innerHTML = `
+                <div class="flex gap-4 items-start">
+                    <img src="${p.image}" alt="${p.name}" class="w-28 h-28 object-cover rounded-2xl bg-gray-50 border border-gray-100 flex-shrink-0" onerror="this.src='https://placehold.co/300x300/f3f4f6/9ca3af?text=FLASH10'">
+                    <div class="space-y-1">
+                        <span class="bg-flash-50 text-flash-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full">${p.category}</span>
+                        <h2 class="text-base font-extrabold text-gray-900">${p.name}</h2>
+                        <p class="text-xs text-gray-500 font-semibold">${p.unit}</p>
+                        <div class="flex items-center gap-2 pt-1">
+                            <span class="text-lg font-black text-gray-900">₹${p.price}</span>
+                            ${p.originalPrice > p.price ? `<span class="text-xs text-gray-400 line-through">₹${p.originalPrice}</span>` : ''}
+                            ${p.discount > 0 ? `<span class="text-xs font-bold text-red-500">${p.discount}% OFF</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-gray-100 pt-3 space-y-2 text-xs">
+                    <p class="font-bold text-gray-700">Product Description</p>
+                    <p class="text-gray-500 leading-relaxed">${p.description}</p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded-2xl flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2 text-flash-700 font-bold">
+                        <i class="fa-solid fa-bolt"></i> 10-Minute Lightning Delivery
+                    </div>
+                    <div class="text-gray-500 font-semibold">Rating: ⭐ ${p.rating}</div>
+                </div>
+                <div class="pt-2">
+                    ${qty === 0 ? 
+                        `<button onclick="addToCart('${p.id}'); closeProductModal();" class="w-full bg-flash-600 hover:bg-flash-700 text-white font-bold py-3 rounded-xl shadow transition">Add to Cart</button>` :
+                        `<div class="flex items-center justify-between bg-flash-50 border border-flash-200 p-3 rounded-xl">
+                            <span class="font-bold text-xs text-flash-800">Quantity in cart: ${qty}</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="updateQuantity('${p.id}', -1)" class="w-7 h-7 bg-white border border-gray-200 font-bold rounded-lg">-</button>
+                                <span class="font-bold">${qty}</span>
+                                <button onclick="updateQuantity('${p.id}', 1)" class="w-7 h-7 bg-white border border-gray-200 font-bold rounded-lg">+</button>
+                            </div>
+                        </div>`
+                    }
+                </div>
+            `;
+            const modal = document.getElementById('product-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('product-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        /* ==========================================
+           9. SHOPPING CART MANAGEMENT
+           ========================================== */
+        function addToCart(productId) {
+            const p = PRODUCTS_DATA.find(item => item.id === productId);
+            if (!p) return;
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                if (existing.quantity < p.stock) {
+                    existing.quantity++;
+                    showToast(`Updated ${p.name} quantity to ${existing.quantity}`);
+                } else {
+                    showToast(`Maximum available stock reached (${p.stock})`, 'error');
+                    return;
+                }
+            } else {
+                cart.push({ ...p, quantity: 1 });
+                showToast(`Added ${p.name} to cart`);
+            }
+            saveCart();
+            refreshUIComponents();
+        }
+
+        function updateQuantity(productId, delta) {
+            const existing = cart.find(item => item.id === productId);
+            if (!existing) return;
+            const p = PRODUCTS_DATA.find(item => item.id === productId);
+            const newQty = existing.quantity + delta;
+
+            if (newQty <= 0) {
+                cart = cart.filter(item => item.id !== productId);
+                showToast(`Removed ${existing.name} from cart`);
+            } else if (p && newQty > p.stock) {
+                showToast(`Cannot exceed available stock (${p.stock})`, 'error');
+                return;
+            } else {
+                existing.quantity = newQty;
+            }
+            saveCart();
+            refreshUIComponents();
+        }
+
+        function clearCart() {
+            cart = [];
+            saveCart();
+            refreshUIComponents();
+            showToast('Cart cleared');
+        }
+
+        function saveCart() {
+            localStorage.setItem('flash10_cart', JSON.stringify(cart));
+        }
+
+        function refreshUIComponents() {
+            updateCartCount();
+            renderFeaturedProducts();
+            renderSpecialOffers();
+            renderFullCatalog();
+            renderCart();
+        }
+
+        function updateCartCount() {
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const badge = document.getElementById('cart-item-count');
+            const mobBadge = document.getElementById('mob-cart-badge');
+            if (badge) badge.innerText = totalCount;
+            if (mobBadge) mobBadge.innerText = totalCount;
+        }
+
+        function calculateCartTotals() {
+            let subtotal = 0;
+            let discountTotal = 0;
+            cart.forEach(item => {
+                subtotal += item.originalPrice * item.quantity;
+                discountTotal += (item.originalPrice - item.price) * item.quantity;
+            });
+            const deliveryFee = subtotal > 0 ? 25 : 0;
+            const finalTotal = (subtotal - discountTotal) + deliveryFee;
+            return { subtotal, discountTotal, deliveryFee, finalTotal };
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const emptyState = document.getElementById('empty-cart-state');
+            const contentWrapper = document.getElementById('cart-content-wrapper');
+            if (!container) return;
+
+            if (cart.length === 0) {
+                if (contentWrapper) contentWrapper.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            if (contentWrapper) contentWrapper.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+
+            container.innerHTML = cart.map(item => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-xl bg-gray-50 flex-shrink-0" onerror="this.src='https://placehold.co/200x200/f3f4f6/9ca3af?text=FLASH10'">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-800">${item.name}</h4>
+                            <p class="text-[11px] text-gray-400">${item.unit}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs font-black text-gray-900">₹${item.price}</span>
+                                ${item.originalPrice > item.price ? `<span class="text-[10px] text-gray-400 line-through">₹${item.originalPrice}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-1.5 bg-gray-100 rounded-xl px-2 py-1">
+                            <button onclick="updateQuantity('${item.id}', -1)" class="w-6 h-6 bg-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center">-</button>
+                            <span class="text-xs font-bold w-5 text-center">${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', 1)" class="w-6 h-6 bg-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center">+</button>
+                        </div>
+                        <button onclick="updateQuantity('${item.id}', -${item.quantity})" class="text-gray-400 hover:text-red-500 p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            const totals = calculateCartTotals();
+            const subElem = document.getElementById('cart-subtotal');
+            const delElem = document.getElementById('cart-delivery-fee');
+            const disElem = document.getElementById('cart-discount');
+            const totElem = document.getElementById('cart-total');
+
+            if (subElem) subElem.innerText = `₹${totals.subtotal}`;
+            if (delElem) delElem.innerText = `₹${totals.deliveryFee}`;
+            if (disElem) disElem.innerText = `-₹${totals.discountTotal}`;
+            if (totElem) totElem.innerText = `₹${totals.finalTotal}`;
+        }
+
+        function proceedToCheckout() {
+            if (cart.length === 0) {
+                showToast('Your cart is empty', 'error');
+                return;
+            }
+            switchView('checkout');
+            renderCheckoutSummary();
+        }
+
+        function renderCheckoutSummary() {
+            const container = document.getElementById('checkout-items-summary');
+            if (!container) return;
+            container.innerHTML = cart.map(item => `
+                <div class="flex justify-between items-center">
+                    <span class="truncate max-w-[180px]">${item.name} (x${item.quantity})</span>
+                    <span class="font-semibold">₹${item.price * item.quantity}</span>
+                </div>
+            `).join('');
+
+            const totals = calculateCartTotals();
+            document.getElementById('checkout-subtotal').innerText = `₹${totals.subtotal}`;
+            document.getElementById('checkout-delivery').innerText = `₹${totals.deliveryFee}`;
+            document.getElementById('checkout-discount').innerText = `-₹${totals.discountTotal}`;
+            document.getElementById('checkout-total').innerText = `₹${totals.finalTotal}`;
+
+            // Pre-fill user details if logged in
+            if (currentUser) {
+                const nameInput = document.getElementById('checkout-name');
+                const phoneInput = document.getElementById('checkout-phone');
+                if (nameInput && !nameInput.value) nameInput.value = currentUser.name;
+                if (phoneInput && !phoneInput.value) phoneInput.value = currentUser.phone;
+            }
+        }
+
+        /* ==========================================
+           10. CHECKOUT & ORDER CREATION
+           ========================================== */
+        function handlePlaceOrder(event) {
+            event.preventDefault();
+            if (cart.length === 0) {
+                showToast('Cart is empty', 'error');
+                return;
+            }
+
+            const name = document.getElementById('checkout-name').value;
+            const phone = document.getElementById('checkout-phone').value;
+            const address = document.getElementById('checkout-address').value;
+            const landmark = document.getElementById('checkout-landmark').value;
+            const instructions = document.getElementById('checkout-instructions').value;
+            const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
+            const totals = calculateCartTotals();
+            const orderId = 'FLASH10-' + Math.floor(100000 + Math.random() * 900000);
+            
+            const newOrder = {
+                id: orderId,
+                date: new Date().toLocaleString(),
+                items: [...cart],
+                subtotal: totals.subtotal,
+                deliveryFee: totals.deliveryFee,
+                discount: totals.discountTotal,
+                total: totals.finalTotal,
+                customer: { name, phone, address, landmark, instructions },
+                paymentMethod,
+                statusStep: 1, // 1: Placed, 2: Confirmed, 3: Preparing, 4: Out for Delivery, 5: Delivered
+                statusText: 'Order received and confirmed at dark store.'
+            };
+
+            orders.unshift(newOrder);
+            localStorage.setItem('flash10_orders', JSON.stringify(orders));
+            
+            // Set as active live tracking order
+            activeTrackingOrder = newOrder;
+            localStorage.setItem('flash10_active_tracking', JSON.stringify(activeTrackingOrder));
+
+            // Clear cart
+            cart = [];
+            saveCart();
+            updateCartCount();
+
+            showToast('Order placed successfully! 10-min delivery started.');
+            switchView('orders');
+            checkActiveTracking();
+        }
+
+        /* ==========================================
+           11. LIVE ORDER TRACKING & TIMERS
+           ========================================== */
+        function checkActiveTracking() {
+            const activeSection = document.getElementById('active-tracking-section');
+            const ordersListContainer = document.getElementById('orders-list-container');
+            const emptyState = document.getElementById('empty-orders-state');
+
+            if (!activeSection) return;
+
+            if (activeTrackingOrder) {
+                activeSection.classList.remove('hidden');
+                document.getElementById('track-order-id').innerText = activeTrackingOrder.id;
+                document.getElementById('track-order-total').innerText = `₹${activeTrackingOrder.total}`;
+                updateTimelineUI(activeTrackingOrder.statusStep);
+                startCountdownTimer();
+            } else {
+                activeSection.classList.add('hidden');
+            }
+
+            renderOrdersHistoryList();
+        }
+
+        function updateTimelineUI(step) {
+            const progressBar = document.getElementById('timeline-progress-bar');
+            if (progressBar) {
+                const percentages = { 1: 0, 2: 25, 3: 50, 4: 75, 5: 100 };
+                progressBar.style.width = `${percentages[step]}%`;
+            }
+
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                const circle = item.querySelector('.step-circle');
+                const stepNum = index + 1;
+                if (stepNum <= step) {
+                    circle.classList.remove('bg-white/30');
+                    circle.classList.add('bg-white', 'text-flash-900');
+                } else {
+                    circle.classList.add('bg-white/30');
+                    circle.classList.remove('bg-white', 'text-flash-900');
+                }
+            });
+
+            const statusDesc = document.getElementById('tracking-status-desc');
+            if (statusDesc) {
+                const descriptions = {
+                    1: "Order received and sent to nearest dark store.",
+                    2: "Order confirmed by packer. Packing items...",
+                    3: "Items packed and handed over to delivery partner.",
+                    4: "Delivery partner is on the way to your location!",
+                    5: "Order delivered successfully. Enjoy your 10-min delivery!"
+                };
+                statusDesc.innerText = descriptions[step] || "";
+            }
+        }
+
+        function startCountdownTimer() {
+            if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+            let timeLeft = 600; // 10 minutes in seconds
+
+            countdownTimerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimerInterval);
+                    if (activeTrackingOrder) {
+                        activeTrackingOrder.statusStep = 5;
+                        localStorage.setItem('flash10_active_tracking', JSON.stringify(activeTrackingOrder));
+                        updateTimelineUI(5);
+                    }
+                    return;
+                }
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                const timerEl = document.getElementById('countdown-timer');
+                if (timerEl) {
+                    timerEl.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                }
+
+                // Simulate progression stages based on time elapsed
+                if (timeLeft === 540 && activeTrackingOrder.statusStep < 2) {
+                    activeTrackingOrder.statusStep = 2;
+                    updateTimelineUI(2);
+                } else if (timeLeft === 420 && activeTrackingOrder.statusStep < 3) {
+                    activeTrackingOrder.statusStep = 3;
+                    updateTimelineUI(3);
+                } else if (timeLeft === 240 && activeTrackingOrder.statusStep < 4) {
+                    activeTrackingOrder.statusStep = 4;
+                    updateTimelineUI(4);
+                } else if (timeLeft === 0 && activeTrackingOrder.statusStep < 5) {
+                    activeTrackingOrder.statusStep = 5;
+                    updateTimelineUI(5);
+                }
+            }, 1000);
+        }
+
+        function renderOrders() {
+            checkActiveTracking();
+        }
+
+        function renderOrdersHistoryList() {
+            const container = document.getElementById('orders-list-container');
+            const emptyState = document.getElementById('empty-orders-state');
+            if (!container) return;
+
+            if (orders.length === 0) {
+                container.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+
+            container.innerHTML = orders.map(ord => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                        <div>
+                            <span class="text-xs font-extrabold text-flash-600 bg-flash-50 px-2.5 py-1 rounded-full">#${ord.id}</span>
+                            <span class="text-xs text-gray-400 ml-2">${ord.date}</span>
+                        </div>
+                        <div class="text-sm font-black text-gray-900">₹${ord.total} <span class="text-xs font-normal text-gray-500">(${ord.paymentMethod})</span></div>
+                    </div>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        <p><span class="font-bold">Items:</span> ${ord.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}</p>
+                        <p><span class="font-bold">Delivery Address:</span> ${ord.customer.address}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-50">
+                        <span class="text-[11px] font-bold ${ord.statusStep === 5 ? 'text-flash-600' : 'text-amber-600'}">
+                            ${ord.statusStep === 5 ? '✅ Delivered in 10 mins' : '⚡ Out for delivery'}
+                        </span>
+                        <button onclick="viewOrderDetails('${ord.id}')" class="text-xs font-semibold text-flash-600 hover:underline">View Receipt</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewOrderDetails(orderId) {
+            const ord = orders.find(o => o.id === orderId);
+            if (!ord) return;
+            showToast(`Viewing receipt for order #${ord.id}`);
+            activeTrackingOrder = ord;
+            checkActiveTracking();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==========================================
+           12. AUTHENTICATION (DEMO)
+           ========================================== */
+        function renderAuthNav() {
+            const container = document.getElementById('auth-nav-container');
+            if (!container) return;
+
+            if (currentUser) {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200">
+                        <div class="w-7 h-7 rounded-full bg-flash-600 text-white flex items-center justify-center font-bold text-xs">
+                            ${currentUser.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="hidden sm:block text-xs">
+                            <p class="font-bold text-gray-800">${currentUser.name}</p>
+                            <button onclick="handleLogout()" class="text-[10px] text-red-500 hover:underline font-semibold">Sign Out</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="switchView('login')" class="flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-gray-700 hover:text-flash-600 hover:bg-gray-100 rounded-xl transition">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="hidden sm:inline">Sign In</span>
+                    </button>
+                `;
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+
+            if (tab === 'login') {
+                loginBtn.className = "flex-1 py-2 rounded-lg bg-white text-gray-900 shadow-sm transition";
+                regBtn.className = "flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-900 transition";
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+            } else {
+                regBtn.className = "flex-1 py-2 rounded-lg bg-white text-gray-900 shadow-sm transition";
+                loginBtn.className = "flex-1 py-2 rounded-lg text-gray-500 hover:text-gray-900 transition";
+                regForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+        }
+
+        function fillDemoUser() {
+            document.getElementById('login-email').value = "demo@flash10.com";
+            document.getElementById('login-password').value = "password123";
+            showToast('Demo credentials filled');
+        }
+
+        function handleLoginSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            currentUser = { name: "Alex Johnson", email, phone: "9876543210" };
+            localStorage.setItem('flash10_user', JSON.stringify(currentUser));
+            renderAuthNav();
+            showToast('Successfully signed in!');
+            switchView('home');
+        }
+
+        function handleRegisterSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            currentUser = { name, email, phone };
+            localStorage.setItem('flash10_user', JSON.stringify(currentUser));
+            renderAuthNav();
+            showToast('Demo account created successfully!');
+            switchView('home');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('flash10_user');
+            renderAuthNav();
+            showToast('Signed out successfully');
+            switchView('home');
+        }
+    </script>
+</body>
+</html>
